@@ -1,3 +1,22 @@
 body {
     background-color: rgb(180, 231, 187);
 }
+
+.edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 600px;
+}
+
+.edit-form > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.edit-form input,
+.edit-form textarea,
+.edit-form select {
+    padding: 8px 12px;
+}
