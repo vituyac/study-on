@@ -27,7 +27,7 @@ class Lesson
 
     #[ORM\Column(nullable: true)]
     #[Assert\LessThanOrEqual(10000)]
-    private ?int $position = null;
+    private ?int $ordering = null;
 
     public function getId(): ?int
     {
@@ -70,14 +70,14 @@ class Lesson
         return $this;
     }
 
-    public function getPosition(): ?int
+    public function getOrdering(): ?int
     {
-        return $this->position;
+        return $this->ordering;
     }
 
-    public function setPosition(?int $position): static
+    public function setOrdering(?int $ordering): static
     {
-        $this->position = $position;
+        $this->ordering = $ordering;
 
         return $this;
     }
