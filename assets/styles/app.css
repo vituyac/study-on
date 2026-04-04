@@ -2,6 +2,10 @@ body {
     background-color: rgb(180, 231, 187);
 }
 
+button {
+    cursor: pointer;
+}
+
 .edit-form {
     display: flex;
     flex-direction: column;
