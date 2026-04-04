@@ -9,3 +9,10 @@
 
 controllers:
     resource: routing.controllers
+
+app_home:
+    path: /
+    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController
+    defaults:
+        route: app_course_index
+        permanent: false
