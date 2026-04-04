@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{# {% block title %}{% endblock %} #}
+{% block title %}Курсы / StudyOn{% endblock %}
 
 {% block body %}
     <h1>Курсы</h1>
@@ -8,8 +8,10 @@
     <div>
         {% for course in courses %}
             <div>
-                <h2><a href="{{ path('app_course_show', {'id': course.id}) }}">{{ course.title }}</a></h2>
-                <p>{{ course.description }}</p>
+                <h2><a href="{{ path('app_course_show', {'id': course.id}) }}">{{ loop.index }}. {{ course.title }}</a></h2>
+                {% if course.description %}
+                    <p>{{ course.description }}</p>
+                {% endif %}
             </div>
         {% else %}
             <p>Курсы не найдены</p>

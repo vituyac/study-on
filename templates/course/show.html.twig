@@ -4,7 +4,9 @@
 
 {% block body %}
     <h1>{{ course.title }}</h1>
-    <p>{{ course.description }}</p>
+    {% if course.description %}
+        <p>{{ course.description }}</p>
+    {% endif %}
 
     <div>
         {% for lesson in course.lessons %}
@@ -14,9 +16,9 @@
         {% endfor %}
     </div>
 
-    <a href="{{ path('app_course_index') }}">К списку курсов</a>
+    <a href="{{ path('app_course_index') }}">Вернуться к списку</a>
 
-    <a href="{{ path('app_course_edit', {'id': course.id}) }}">Редактировать курс</a>
+    <a href="{{ path('app_course_edit', {'id': course.id}) }}">Редактировать</a>
 
     <a href="{{ path('app_lesson_new', {'course_id': course.id}) }}">Добавить урок</a>
 
