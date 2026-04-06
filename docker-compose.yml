@@ -1,5 +1,7 @@
 volumes:
   postgres: ~
+  composer: ~
+  vendor: ~
   cache: ~
 services:
   nginx:
@@ -15,7 +17,7 @@ services:
       - php
   postgres:
     ports:
-      - "127.0.0.1:5433:5432"
+      - "127.0.0.1:5432:5432"
     image: postgres:alpine
     volumes:
       - postgres:/var/lib/postgresql/18/docker
@@ -27,9 +29,11 @@ services:
     working_dir: /app
     volumes:
       - .:/app
-      - cache:/cache
+      - composer:/composer
+      - vendor:/app/vendor
+      - cache:/app/var/cache
     environment:
       - COMPOSER_ALLOW_SUPERUSER=1
-      - COMPOSER_CACHE_DIR=/cache
+      - COMPOSER_CACHE_DIR=/composer
     links:
       - postgres
