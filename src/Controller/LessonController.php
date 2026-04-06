@@ -28,14 +28,12 @@ final class LessonController extends AbstractController
     {
         $lesson = new Lesson();
 
-        $courseId = $request->query->get('course_id');
-        if ($courseId) {
-            $course = $courseRepository->find($courseId);
-            if (!$course) {
-                throw $this->createNotFoundException('Курс не найден');
-            }
-            $lesson->setCourse($course);
+        $course = $courseRepository->find((int)$request->query->get('course_id'));
+        if (!$course) {
+            throw $this->createNotFoundException('Курс не найден');
         }
+
+        $lesson->setCourse($course);
 
         $form = $this->createForm(LessonType::class, $lesson);
         $form->handleRequest($request);
