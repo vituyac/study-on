@@ -21,4 +21,13 @@ migrate:
 fixtload:
 	@${CONSOLE} doctrine:fixtures:load
 
+db:
+	@${CONSOLE} doctrine:database:create
+
+encore_dev:
+	@${COMPOSE} run --rm node yarn encore dev
+
+encore_prod:
+	@${COMPOSE} run --rm node yarn encore production
+	
 -include local.mk
