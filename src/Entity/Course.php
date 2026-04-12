@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CourseRepository::class)]
 #[UniqueEntity('code', message: 'Курс с таким кодом уже существует')]
@@ -18,12 +19,26 @@ class Course
     private ?int $id = null;
 
     #[ORM\Column(length: 255, unique: true)]
+    #[Assert\NotBlank(message: 'Введите код курса')]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'Код курса должен быть не длиннее {{ limit }} символов'
+    )]
     private ?string $code = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Введите название курса')]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'Название курса должно быть не длиннее {{ limit }} символов'
+    )]
     private ?string $title = null;
 
     #[ORM\Column(length: 1000, nullable: true)]
+    #[Assert\Length(
+        max: 1000,
+        maxMessage: 'Описание не должно превышать {{ limit }} символов'
+    )]
     private ?string $description = null;
 
     /**
