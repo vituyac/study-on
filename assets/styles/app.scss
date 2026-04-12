@@ -1,5 +1,10 @@
-@import "~bootstrap/scss/bootstrap";
+@import "bootstrap/scss/bootstrap";
 
 body {
-    background-color: rgb(226, 75, 75);
+    background-color: #ffffff;
+    margin: 16px 30px;
+}
+
+.lesson:hover span:first-child {
+    text-decoration: underline;
 }

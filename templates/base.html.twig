@@ -5,10 +5,11 @@
         <title>{% block title %}StudyOn{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
         {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
         {% endblock %}
 
         {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
+            {{ encore_entry_script_tags('app') }}
         {% endblock %}
 
         {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
@@ -19,6 +20,12 @@
         {% endif %}
     </head>
     <body>
+        <div class="d-flex align-items-center gap-2 mb-3 px-3 py-2 rounded-3 border shadow-sm">
+            <a class="fs-3 fw-semibold text-primary text-decoration-none" href="{{ path('app_course_index') }}">StudyOn</a>
+            <span class="fs-4 fw-semibold text-dark">
+                {% block header %}{% endblock %}
+            </span>
+        </div>
         {% block body %}{% endblock %}
     </body>
 </html>

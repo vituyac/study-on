@@ -2,10 +2,16 @@
 
 {% block title %}Новый урок{% endblock %}
 
+{% block header %}/ {{ lesson.course.title }} / Новый урок{% endblock %}
+
 {% block body %}
-    <h1>Создание урока</h1>
+    <div>
+        <p class="fs-3 fw-semibold">Создание нового урока</p>
 
-    {{ include('lesson/_form.html.twig') }}
+        {{ include('lesson/_form.html.twig', {'button_label': 'Создать'}) }}
 
-    <a href="{{ path('app_course_show', {'id': lesson.course.id}) }}">К курсу</a>
+        <a href="{{ path('app_course_show', {'id': lesson.course.id}) }}" class="btn btn-outline-secondary">
+            Назад
+        </a>
+    </div>
 {% endblock %}

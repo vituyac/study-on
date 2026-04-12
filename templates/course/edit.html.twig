@@ -2,10 +2,17 @@
 
 {% block title %}{{ course.title }} / StudyOn{% endblock %}
 
+{% block header %}/ Редактирование курса{% endblock %}
+
 {% block body %}
     <h1>{{ course.title }}</h1>
 
     {{ include('course/_form.html.twig', {'button_label': 'Сохранить'}) }}
 
-    {{ include('course/_delete_form.html.twig') }}
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <a href="{{ path('app_course_show', {'id': course.id}) }}" class="btn btn-outline-secondary">
+            Назад
+        </a>
+        {{ include('course/_delete_form.html.twig') }}
+    </div>
 {% endblock %}

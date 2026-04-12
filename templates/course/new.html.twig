@@ -2,10 +2,16 @@
 
 {% block title %}Новый курс / StudyOn{% endblock %}
 
+{% block header %}/ Новый курс{% endblock %}
+
 {% block body %}
-    <h1>Создание нового курса</h1>
+    <div>
+        <p class="fs-3 fw-semibold">Создание нового курса</p>
 
-    {{ include('course/_form.html.twig') }}
+        {{ include('course/_form.html.twig', {'button_label': 'Создать'}) }}
 
-    <a href="{{ path('app_course_index') }}">К списку курсов</a>
+        <a href="{{ path('app_course_index') }}" class="btn btn-outline-secondary">
+            Вернуться к курсам
+        </a>
+    </div>
 {% endblock %}

@@ -2,16 +2,29 @@
 
 {% block title %}{{ lesson.title }} / {{ lesson.course.title }} / StudyOn{% endblock %}
 
+{% block header %} / {{ lesson.course.title }}{% endblock %}
+
 {% block body %}
-    <h1>{{ lesson.title }}</h1>
+    <div class="d-flex flex-column gap-3">
+        <div class="card shadow-sm border-1">
+            <div class="card-body">
+                <h1 class="card-title mb-3">{{ lesson.title }}</h1>
+                {% if lesson.content %}
+                    <p class="card-text text-muted fs-5 mb-0">{{ lesson.content }}</p>
+                {% endif %}
+            </div>
+        </div>
 
-    <p>Курс: <a href="{{ path('app_course_show', {'id': lesson.course.id}) }}">{{ lesson.course.title }}</a></p>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <a href="{{ path('app_course_show', {'id': lesson.course.id}) }}" class="btn btn-outline-secondary">
+                Назад
+            </a>
 
-    <div>
-        {{ lesson.content|raw }}
+            <a href="{{ path('app_lesson_edit', {'id': lesson.id}) }}" class="btn btn-outline-primary">
+                Редактировать
+            </a>
+                
+            {{ include('lesson/_delete_form.html.twig') }}
+        </div>
     </div>
-
-    <a href="{{ path('app_lesson_edit', {'id': lesson.id}) }}">Редактировать</a>
-
-    {{ include('lesson/_delete_form.html.twig') }}
 {% endblock %}

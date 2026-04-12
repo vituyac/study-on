@@ -2,25 +2,58 @@
 
 {% block title %}{{ course.title }} / StudyOn{% endblock %}
 
+{% block header %} / {{ course.title }}{% endblock %}
+
 {% block body %}
-    <h1>{{ course.title }}</h1>
-    {% if course.description %}
-        <p>{{ course.description }}</p>
-    {% endif %}
+    <div class="d-flex flex-column gap-3">
+        <div class="card shadow-sm border-1">
+            <div class="card-body">
+                <h1 class="card-title mb-3">{{ course.title }}</h1>
+                {% if course.description %}
+                    <p class="card-text text-muted fs-5 mb-0">{{ course.description }}</p>
+                {% endif %}
+            </div>
+        </div>
 
-    <div>
-        {% for lesson in course.lessons %}
-            <p>{{ loop.index }}. <a href="{{ path('app_lesson_show', {'id': lesson.id}) }}">{{ lesson.title }}</a></p>
-        {% else %}
-            <p>Уроков ещё нет</p>
-        {% endfor %}
+        <div class="card shadow-sm border-1 mb-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="fs-4 fw-semibold mb-0">Уроки</p>
+                </div>
+
+                {% if course.lessons|length > 0 %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for lesson in course.lessons %}
+                            <a href="{{ path('app_lesson_show', {'id': lesson.id}) }}"
+                               class="lesson d-flex justify-content-between align-items-center text-decoration-none text-dark">
+                                <span>{{ loop.index }}. {{ lesson.title }}</span>
+                                <span class="text-muted small">Открыть</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="fs-4 fw-semibold p-4 text-center">
+                        Здесь пока нет уроков.
+                        <a href="{{ path('app_lesson_new', {'course_id': course.id}) }}" class="text-decoration-none">Создайте первый урок</a>.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <a href="{{ path('app_course_index') }}" class="btn btn-outline-secondary">
+                Вернуться к курсам
+            </a>
+
+            <a href="{{ path('app_course_edit', {'id': course.id}) }}" class="btn btn-outline-primary">
+                Редактировать
+            </a>
+
+            <a href="{{ path('app_lesson_new', {'course_id': course.id}) }}" class="btn btn-primary">
+                Добавить урок
+            </a>
+
+            {{ include('course/_delete_form.html.twig') }}
+        </div>
     </div>
-
-    <a href="{{ path('app_course_index') }}">Вернуться к списку</a>
-
-    <a href="{{ path('app_course_edit', {'id': course.id}) }}">Редактировать</a>
-
-    <a href="{{ path('app_lesson_new', {'course_id': course.id}) }}">Добавить урок</a>
-
-    {{ include('course/_delete_form.html.twig') }}
 {% endblock %}
