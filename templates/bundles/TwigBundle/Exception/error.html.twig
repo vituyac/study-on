@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+
+{% block header %}/ Oops!{% endblock %}
+
+{% block body %}
+    <h1>Ошибка</h1>
+
+    <p>Во время выполнения запроса произошла ошибка. Попробуйте позже или <a href="{{ path('app_home') }}">вернитесь на главную</a>.</p>
+{% endblock %}

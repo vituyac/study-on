@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+
+{% block header %}/ 404{% endblock %}
+
+{% block body %}
+    <h1>Страница не найдена</h1>
+
+    <p>Запрашиваемая страница не найдена. Проверьте правильность URL или <a href="{{ path('app_home') }}">вернитесь на главную</a>.</p>
+{% endblock %}
