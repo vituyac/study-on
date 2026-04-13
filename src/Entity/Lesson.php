@@ -20,13 +20,23 @@ class Lesson
     private ?Course $course = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Введите название урока')]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'Название урока должно быть не длиннее {{ limit }} символов'
+    )]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: 'Введите описание урока')]
     private ?string $content = null;
 
     #[ORM\Column(nullable: true)]
-    #[Assert\LessThanOrEqual(10000)]
+    #[Assert\LessThanOrEqual(
+        value: 10000,
+        message: 'Порядок должен быть не больше {{ compared_value }}'
+    )]
+    #[Assert\Positive(message: 'Порядок должен быть положительным')]
     private ?int $ordering = null;
 
     public function getId(): ?int
