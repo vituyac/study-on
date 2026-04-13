@@ -18,19 +18,19 @@ migration:
 migrate:
 	@${CONSOLE} doctrine:migrations:migrate
 
-migrate test:
+migrate_test:
 	@${CONSOLE} doctrine:migrations:migrate --env=test
 
 fixtload:
 	@${CONSOLE} doctrine:fixtures:load
 
-fixtload test:
+fixtload_test:
 	@${CONSOLE} doctrine:fixtures:load --env=test
 
 db:
 	@${CONSOLE} doctrine:database:create
 
-db test:
+db_test:
 	@${CONSOLE} doctrine:database:create --env=test
 
 encore_dev:
