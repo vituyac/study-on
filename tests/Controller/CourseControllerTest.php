@@ -11,8 +11,8 @@ class CourseControllerTest extends WebTestCase
     {
         $client = static::createClient();
         $crawler = $client->request('GET', '/courses');
-
         $this->assertResponseIsSuccessful();
+
         $this->assertCount(4, $crawler->selectLink('Перейти к курсу'));
     }
 
@@ -20,35 +20,38 @@ class CourseControllerTest extends WebTestCase
     {
         $client = static::createClient();
         $crawler = $client->request('GET', '/courses');
+        $this->assertResponseIsSuccessful();
 
         $link = $crawler->selectLink('Перейти к курсу')->first()->link();
         $crawler = $client->click($link);
-
         $this->assertResponseIsSuccessful();
+
         $this->assertCount(4, $crawler->selectLink('Открыть'));
     }
 
-    public function testCourseShowNotFound(): void
+    public function testShowNotFound(): void
     {
         $client = static::createClient();
         $crawler = $client->request('GET', '/courses/1000');
-
         $this->assertResponseStatusCodeSame(404);
     }
 
-    public function testCourseEditNotFound(): void
+    public function testEditNotFound(): void
     {
         $client = static::createClient();
         $crawler = $client->request('GET', '/courses/1000/edit');
-
         $this->assertResponseStatusCodeSame(404);
     }
 
-    public function testCreateCourse(): void
+    public function testCreate(): void
     {
         $client = static::createClient();
 
-        $client->request('GET', '/courses');
+        $crawler = $client->request('GET', '/courses');
+        $this->assertResponseIsSuccessful();
+
+        $coursesCount = $crawler->filter('a:contains("Перейти к курсу")')->count();
+
         $client->clickLink('Добавить курс');
         $this->assertResponseIsSuccessful();
 
@@ -62,17 +65,19 @@ class CourseControllerTest extends WebTestCase
         $crawler = $client->followRedirect();
         $this->assertResponseIsSuccessful();
 
-        $this->assertCount(5, $crawler->selectLink('Перейти к курсу'));
+        $this->assertCount($coursesCount + 1, $crawler->selectLink('Перейти к курсу'));
         $this->assertSelectorTextContains('body', 'Новый курс');
         $this->assertSelectorTextContains('body', 'Описание нового курса');
     }
 
     #[DataProvider('invalidCourseDataProvider')]
-    public function testCreateCourseValidation(array $formData, string $expectedError): void
+    public function testCreateValidation(array $formData, string $expectedError): void
     {
         $client = static::createClient();
 
         $client->request('GET', '/courses');
+        $this->assertResponseIsSuccessful();
+
         $client->clickLink('Добавить курс');
         $this->assertResponseIsSuccessful();
 
@@ -82,7 +87,7 @@ class CourseControllerTest extends WebTestCase
         $this->assertSelectorTextContains('body', $expectedError);
     }
 
-    public function testEditCourse(): void
+    public function testEdit(): void
     {
         $client = static::createClient();
 
@@ -111,7 +116,7 @@ class CourseControllerTest extends WebTestCase
     }
 
     #[DataProvider('invalidCourseDataProvider')]
-    public function testEditCourseValidation(array $formData, string $expectedError): void
+    public function testEditValidation(array $formData, string $expectedError): void
     {
         $client = static::createClient();
 
@@ -131,12 +136,14 @@ class CourseControllerTest extends WebTestCase
         $this->assertSelectorTextContains('body', $expectedError);
     }
 
-    public function testDeleteCourse(): void
+    public function testDelete(): void
     {
         $client = static::createClient();
 
         $crawler = $client->request('GET', '/courses');
         $this->assertResponseIsSuccessful();
+
+        $coursesCount = $crawler->filter('a:contains("Перейти к курсу")')->count();
 
         $link = $crawler->selectLink('Перейти к курсу')->first()->link();
         $client->click($link);
@@ -148,7 +155,30 @@ class CourseControllerTest extends WebTestCase
         $crawler = $client->followRedirect();
         $this->assertResponseIsSuccessful();
 
-        $this->assertCount(3, $crawler->selectLink('Перейти к курсу'));
+        $this->assertCount($coursesCount - 1, $crawler->selectLink('Перейти к курсу'));
+    }
+
+    public function testCascadeDelete(): void
+    {
+        $client = static::createClient();
+
+        $crawler = $client->request('GET', '/courses');
+        $this->assertResponseIsSuccessful();
+
+        $link = $crawler->selectLink('Перейти к курсу')->first()->link();
+        $crawler = $client->click($link);
+        $this->assertResponseIsSuccessful();
+
+        $courseLink = $crawler->selectLink('Открыть')->first()->link();
+
+        $client->submitForm('Удалить');
+
+        $this->assertResponseRedirects('/courses', 303);
+        $crawler = $client->followRedirect();
+        $this->assertResponseIsSuccessful();
+
+        $client->click($courseLink);
+        $this->assertResponseStatusCodeSame(404);
     }
 
     public static function invalidCourseDataProvider(): iterable
