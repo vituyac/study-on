@@ -18,11 +18,20 @@ migration:
 migrate:
 	@${CONSOLE} doctrine:migrations:migrate
 
+migrate test:
+	@${CONSOLE} doctrine:migrations:migrate --env=test
+
 fixtload:
 	@${CONSOLE} doctrine:fixtures:load
 
+fixtload test:
+	@${CONSOLE} doctrine:fixtures:load --env=test
+
 db:
 	@${CONSOLE} doctrine:database:create
+
+db test:
+	@${CONSOLE} doctrine:database:create --env=test
 
 encore_dev:
 	@${COMPOSE} run --rm node yarn encore dev
@@ -32,5 +41,5 @@ encore_prod:
 
 phpunit:
 	@${PHP} bin/phpunit
-	
+
 -include local.mk
