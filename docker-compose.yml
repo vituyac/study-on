@@ -48,3 +48,7 @@ services:
       - .:/app
       - yarn:/yarn
       - node_modules:/app/node_modules
+networks:
+  default:
+    external:
+      name: study-onbilling_default
