@@ -64,7 +64,7 @@ class LessonControllerTest extends WebTestCase
         $crawler = $client->click($link);
         $this->assertResponseIsSuccessful();
 
-        $lessonsCount = $crawler->filter('a:contains("Открыть")')->count();
+        $lessonsCount = $crawler->selectLink('Открыть')->count();
 
         $link = $crawler->selectLink('Добавить урок')->first()->link();
         $crawler = $client->click($link);
@@ -175,7 +175,7 @@ class LessonControllerTest extends WebTestCase
         $crawler = $client->click($link);
         $this->assertResponseIsSuccessful();
 
-        $lessonsCount = $crawler->filter('a:contains("Открыть")')->count();
+        $lessonsCount = $crawler->selectLink('Открыть')->count();
 
         $link = $crawler->selectLink('Открыть')->first()->link();
         $crawler = $client->click($link);

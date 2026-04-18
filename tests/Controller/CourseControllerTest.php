@@ -50,7 +50,7 @@ class CourseControllerTest extends WebTestCase
         $crawler = $client->request('GET', '/courses');
         $this->assertResponseIsSuccessful();
 
-        $coursesCount = $crawler->filter('a:contains("Перейти к курсу")')->count();
+        $coursesCount = $crawler->selectLink('Перейти к курсу')->count();
 
         $client->clickLink('Добавить курс');
         $this->assertResponseIsSuccessful();
@@ -143,7 +143,7 @@ class CourseControllerTest extends WebTestCase
         $crawler = $client->request('GET', '/courses');
         $this->assertResponseIsSuccessful();
 
-        $coursesCount = $crawler->filter('a:contains("Перейти к курсу")')->count();
+        $coursesCount = $crawler->selectLink('Перейти к курсу')->count();
 
         $link = $crawler->selectLink('Перейти к курсу')->first()->link();
         $client->click($link);
