@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block body %}
+    <h1>Регистрация</h1>
+    {{ form_errors(registerForm) }}
+    {{ form_start(registerForm) }}
+        <div class="mb-3">
+            {{ form_label(registerForm.email) }}
+            {{ form_widget(registerForm.email, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(registerForm.email) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(registerForm.password.first) }}
+            {{ form_widget(registerForm.password.first, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(registerForm.password.first) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(registerForm.password.second) }}
+            {{ form_widget(registerForm.password.second, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(registerForm.password.second) }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Зарегистрироваться
+        </button>
+    {{ form_end(registerForm) }}
+{% endblock %}
