@@ -21,9 +21,11 @@
             </div>
         {% endfor %}
         <div class="d-flex flex-wrap gap-2 align-items-center">
-            <a href="{{ path('app_course_new') }}" class="btn btn-primary">
-                Добавить курс
-            </a>
+            {% if is_granted('ROLE_SUPER_ADMIN') %}
+                <a href="{{ path('app_course_new') }}" class="btn btn-primary">
+                    Добавить курс
+                </a>
+            {% endif %}
         </div>
     </div>
 {% endblock %}
