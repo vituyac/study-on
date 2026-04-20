@@ -1,12 +1,15 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Controller;
 
+use App\Tests\LoginUserTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class CourseControllerTest extends WebTestCase
 {
+    use LoginUserTrait;
+
     public function testIndex(): void
     {
         $client = static::createClient();
@@ -32,24 +35,29 @@ class CourseControllerTest extends WebTestCase
     public function testShowNotFound(): void
     {
         $client = static::createClient();
-        $crawler = $client->request('GET', '/courses/1000');
+        $client->request('GET', '/courses/1000');
         $this->assertResponseStatusCodeSame(404);
     }
 
     public function testEditNotFound(): void
     {
         $client = static::createClient();
-        $crawler = $client->request('GET', '/courses/1000/edit');
+        $client->disableReboot();
+
+        $this->loginAsAdmin($client);
+
+        $client->request('GET', '/courses/1000/edit');
         $this->assertResponseStatusCodeSame(404);
     }
 
     public function testCreate(): void
     {
         $client = static::createClient();
+        $client->disableReboot();
 
-        $crawler = $client->request('GET', '/courses');
-        $this->assertResponseIsSuccessful();
+        $this->loginAsAdmin($client);
 
+        $crawler = $client->getCrawler();
         $coursesCount = $crawler->selectLink('Перейти к курсу')->count();
 
         $client->clickLink('Добавить курс');
@@ -74,9 +82,9 @@ class CourseControllerTest extends WebTestCase
     public function testCreateValidation(array $formData, string $expectedError): void
     {
         $client = static::createClient();
+        $client->disableReboot();
 
-        $client->request('GET', '/courses');
-        $this->assertResponseIsSuccessful();
+        $this->loginAsAdmin($client);
 
         $client->clickLink('Добавить курс');
         $this->assertResponseIsSuccessful();
@@ -90,9 +98,11 @@ class CourseControllerTest extends WebTestCase
     public function testEdit(): void
     {
         $client = static::createClient();
+        $client->disableReboot();
 
-        $crawler = $client->request('GET', '/courses');
-        $this->assertResponseIsSuccessful();
+        $this->loginAsAdmin($client);
+
+        $crawler = $client->getCrawler();
 
         $link = $crawler->selectLink('Перейти к курсу')->first()->link();
         $client->click($link);
@@ -119,9 +129,11 @@ class CourseControllerTest extends WebTestCase
     public function testEditValidation(array $formData, string $expectedError): void
     {
         $client = static::createClient();
+        $client->disableReboot();
 
-        $crawler = $client->request('GET', '/courses');
-        $this->assertResponseIsSuccessful();
+        $this->loginAsAdmin($client);
+
+        $crawler = $client->getCrawler();
 
         $link = $crawler->selectLink('Перейти к курсу')->first()->link();
         $client->click($link);
@@ -139,9 +151,11 @@ class CourseControllerTest extends WebTestCase
     public function testDelete(): void
     {
         $client = static::createClient();
+        $client->disableReboot();
 
-        $crawler = $client->request('GET', '/courses');
-        $this->assertResponseIsSuccessful();
+        $this->loginAsAdmin($client);
+
+        $crawler = $client->getCrawler();
 
         $coursesCount = $crawler->selectLink('Перейти к курсу')->count();
 
@@ -161,9 +175,11 @@ class CourseControllerTest extends WebTestCase
     public function testCascadeDelete(): void
     {
         $client = static::createClient();
+        $client->disableReboot();
 
-        $crawler = $client->request('GET', '/courses');
-        $this->assertResponseIsSuccessful();
+        $this->loginAsAdmin($client);
+
+        $crawler = $client->getCrawler();
 
         $link = $crawler->selectLink('Перейти к курсу')->first()->link();
         $crawler = $client->click($link);

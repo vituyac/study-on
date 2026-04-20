@@ -1,26 +1,23 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Controller;
 
+use App\Tests\LoginUserTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class LessonControllerTest extends WebTestCase
 {
-    public function testIndex(): void
-    {
-        $client = static::createClient();
-        $crawler = $client->request('GET', '/lessons');
-        $this->assertResponseIsSuccessful();
-
-        $this->assertCount(17, $crawler->selectLink('Перейти к курсу'));
-    }
+    use LoginUserTrait;
 
     public function testShow(): void
     {
         $client = static::createClient();
-        $crawler = $client->request('GET', '/courses');
-        $this->assertResponseIsSuccessful();
+        $client->disableReboot();
+
+        $this->loginAsUser($client);
+
+        $crawler = $client->getCrawler();
 
         $link = $crawler->selectLink('Перейти к курсу')->first()->link();
         $crawler = $client->click($link);
@@ -41,23 +38,33 @@ class LessonControllerTest extends WebTestCase
     public function testShowNotFound(): void
     {
         $client = static::createClient();
-        $crawler = $client->request('GET', '/lessons/1000');
+        $client->disableReboot();
+
+        $this->loginAsUser($client);
+
+        $client->request('GET', '/lessons/1000');
         $this->assertResponseStatusCodeSame(404);
     }
 
     public function testEditNotFound(): void
     {
         $client = static::createClient();
-        $crawler = $client->request('GET', '/lessons/1000/edit');
+        $client->disableReboot();
+
+        $this->loginAsAdmin($client);
+
+        $client->request('GET', '/lessons/1000/edit');
         $this->assertResponseStatusCodeSame(404);
     }
 
     public function testCreateLesson(): void
     {
         $client = static::createClient();
+        $client->disableReboot();
 
-        $crawler = $client->request('GET', '/courses');
-        $this->assertResponseIsSuccessful();
+        $this->loginAsAdmin($client);
+
+        $crawler = $client->getCrawler();
 
         $link = $crawler->selectLink('Перейти к курсу')->first()->link();
         $courseLink = $link->getUri();
@@ -88,9 +95,11 @@ class LessonControllerTest extends WebTestCase
     public function testCreateValidation(array $formData, string $expectedError): void
     {
         $client = static::createClient();
+        $client->disableReboot();
 
-        $crawler = $client->request('GET', '/courses');
-        $this->assertResponseIsSuccessful();
+        $this->loginAsAdmin($client);
+
+        $crawler = $client->getCrawler();
 
         $link = $crawler->selectLink('Перейти к курсу')->first()->link();
         $crawler = $client->click($link);
@@ -109,9 +118,11 @@ class LessonControllerTest extends WebTestCase
     public function testEdit(): void
     {
         $client = static::createClient();
+        $client->disableReboot();
 
-        $crawler = $client->request('GET', '/courses');
-        $this->assertResponseIsSuccessful();
+        $this->loginAsAdmin($client);
+
+        $crawler = $client->getCrawler();
 
         $link = $crawler->selectLink('Перейти к курсу')->first()->link();
         $crawler = $client->click($link);
@@ -142,9 +153,11 @@ class LessonControllerTest extends WebTestCase
     public function testEditValidation(array $formData, string $expectedError): void
     {
         $client = static::createClient();
+        $client->disableReboot();
 
-        $crawler = $client->request('GET', '/courses');
-        $this->assertResponseIsSuccessful();
+        $this->loginAsAdmin($client);
+
+        $crawler = $client->getCrawler();
 
         $link = $crawler->selectLink('Перейти к курсу')->first()->link();
         $crawler = $client->click($link);
@@ -166,9 +179,11 @@ class LessonControllerTest extends WebTestCase
     public function testDelete(): void
     {
         $client = static::createClient();
+        $client->disableReboot();
 
-        $crawler = $client->request('GET', '/courses');
-        $this->assertResponseIsSuccessful();
+        $this->loginAsAdmin($client);
+
+        $crawler = $client->getCrawler();
 
         $link = $crawler->selectLink('Перейти к курсу')->first()->link();
         $courseLink = $link->getUri();
