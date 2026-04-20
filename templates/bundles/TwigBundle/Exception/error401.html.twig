@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+
+{% block header %}/ 401{% endblock %}
+
+{% block body %}
+    <h1>Требуется авторизация</h1>
+
+    <p>Чтобы просмотреть эту страницу, <a href="{{ path('app_login') }}">войдите</a> в систему.</p>
+{% endblock %}

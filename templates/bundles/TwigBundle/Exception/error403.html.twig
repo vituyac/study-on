@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+
+{% block header %}/ 403{% endblock %}
+
+{% block body %}
+    <h1>Доступ запрещен</h1>
+
+    <p>У вас нет прав для доступа к этой странице. Проверьте правильность URL или <a href="{{ path('app_home') }}">вернитесь на главную</a>.</p>
+{% endblock %}
