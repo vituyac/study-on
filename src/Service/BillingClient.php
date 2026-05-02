@@ -25,6 +25,13 @@ class BillingClient
         return $this->request('POST', '/api/v1/register', ['email' => $email, 'password' => $password]);
     }
 
+    public function refreshToken(string $token): array
+    {
+        $data = $this->request('POST', '/api/v1/token/refresh', ['refreshToken' => $token]);
+
+        return $data;
+    }
+
     public function getCurrentUser(string $token): array
     {
         return $this->request('GET', '/api/v1/users/current', null, ['Authorization: Bearer ' . $token]);
