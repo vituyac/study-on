@@ -79,7 +79,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getPassword(): ?string
     {
-        return $this->apiToken;
+        return null;
     }
 
     public function getApiToken(): ?string

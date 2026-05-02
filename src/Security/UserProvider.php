@@ -7,12 +7,16 @@ use App\Service\JwtPayloadDecoder;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class UserProvider implements UserProviderInterface
 {
+    private const REFRESH_TOKEN_COOKIE = 'BILLING_REFRESH_TOKEN';
+
     public function __construct(
         private readonly BillingClient $billingClient,
         private readonly JwtPayloadDecoder $jwtPayloadDecoder,
+        private readonly RequestStack $requestStack,
     ) {
     }
 
@@ -27,17 +31,26 @@ class UserProvider implements UserProviderInterface
      */
     public function loadUserByIdentifier($identifier): UserInterface
     {
+        $request = $this->requestStack->getCurrentRequest();
+        $refreshToken = $request?->cookies->get(self::REFRESH_TOKEN_COOKIE);
+
+        if ($refreshToken === null) {
+            throw new UserNotFoundException();
+        }
+
         try {
-            $data = $this->billingClient->getCurrentUser($identifier);
+            $tokens = $this->billingClient->refreshToken($refreshToken);
+            $data = $this->billingClient->getCurrentUser($tokens['token']);
         } catch (\Throwable) {
-            throw new UserNotFoundException('Token expired or user not found.');
+            throw new UserNotFoundException();
         }
 
         return (new User())
             ->setEmail($data['email'])
             ->setRoles($data['roles'] ?? ['ROLE_USER'])
             ->setBalance((string) $data['balance'])
-            ->setApiToken($identifier);
+            ->setApiToken($tokens['token'])
+            ->setRefreshToken($tokens['refreshToken']);
     }
 
     /**
@@ -60,7 +73,7 @@ class UserProvider implements UserProviderInterface
         $token = $user->getApiToken();
         $refreshToken = $user->getRefreshToken();
 
-        if ($token === null || $refreshToken === null) {
+        if ($token === null && $refreshToken === null) {
             throw new UserNotFoundException();
         }
 
@@ -68,21 +81,19 @@ class UserProvider implements UserProviderInterface
 
         $exp = $payload['exp'] ?? null;
 
-        if (!is_int($exp)) {
-            throw new UserNotFoundException('JWT payload does not contain exp.');
+        if (!is_numeric($exp)) {
+            throw new UserNotFoundException();
         }
 
         if ($exp <= time() + 10) {
             try {
                 $tokens = $this->billingClient->refreshToken($refreshToken);
-                $token = $tokens['token'];
-                $refreshToken = $tokens['refreshToken'];
             } catch (\Throwable) {
-                throw new UserNotFoundException('Token expired or refresh failed.');
+                throw new UserNotFoundException();
             }
 
-            $user->setApiToken($token);
-            $user->setRefreshToken($refreshToken);
+            $user->setApiToken($tokens['token']);
+            $user->setRefreshToken($tokens['refreshToken']);
         }
 
         return $user;
