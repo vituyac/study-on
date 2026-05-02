@@ -13,11 +13,11 @@ class BillingClient
     ) {
     }
 
-    public function auth(string $email, string $password): string
+    public function auth(string $email, string $password): array
     {
         $data = $this->request('POST', '/api/v1/auth', ['email' => $email, 'password' => $password]);
 
-        return $data['token'];
+        return $data;
     }
 
     public function register(string $email, string $password): array

@@ -55,6 +55,7 @@ class SecurityController extends AbstractController
             try {
                 $registerData = $billingClient->register($data['email'], $data['password']);
                 $token = $registerData['token'];
+                $refreshToken = $registerData['refresh_token'];
                 $currentUser = $billingClient->getCurrentUser($token);
             } catch (BillingUnavailableException) {
                 $form->addError(new FormError('Сервис временно недоступен. Попробуйте зарегистрироваться позднее'));
@@ -70,12 +71,13 @@ class SecurityController extends AbstractController
                 $form->addError(new FormError($e->getMessage()));
             }
 
-            if (isset($currentUser, $token)) {
+            if (isset($currentUser, $token, $refreshToken)) {
                 $user = (new User())
                     ->setEmail($currentUser['email'])
                     ->setRoles($data['roles'] ?? ['ROLE_USER'])
                     ->setBalance((string) $currentUser['balance'])
-                    ->setApiToken($token);
+                    ->setApiToken($token)
+                    ->setRefreshToken($refreshToken);
 
                 return $authenticator->authenticateUser(
                     $user,

@@ -53,8 +53,8 @@ class BillingAuthenticator extends AbstractLoginFormAuthenticator
         }
 
         try {
-            $token = $this->billingClient->auth($dto->email, $dto->password);
-            $data = $this->billingClient->getCurrentUser($token);
+            $tokens = $this->billingClient->auth($dto->email, $dto->password);
+            $data = $this->billingClient->getCurrentUser($tokens['token']);
         } catch (BillingUnavailableException) {
             throw new CustomUserMessageAuthenticationException('Сервис временно недоступен');
         } catch (BillingValidationException $e) {
@@ -65,12 +65,13 @@ class BillingAuthenticator extends AbstractLoginFormAuthenticator
 
         $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $email);
 
-        $loadUser = function () use ($data, $token): User {
+        $loadUser = function () use ($data, $tokens): User {
             return (new User())
                 ->setEmail($data['email'])
                 ->setRoles($data['roles'] ?? ['ROLE_USER'])
                 ->setBalance((string) $data['balance'])
-                ->setApiToken($token);
+                ->setApiToken($tokens['token'])
+                ->setRefreshToken($tokens['refresh_token']);
         };
 
         return new SelfValidatingPassport(

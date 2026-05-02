@@ -18,6 +18,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     private ?string $apiToken = null;
 
+    private ?string $refreshToken = null;
+
     public function getEmail(): ?string
     {
         return $this->email;
@@ -39,7 +41,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) ($this->apiToken ?? $this->email);
+        return $this->email;
     }
 
     /**
@@ -88,6 +90,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setApiToken(?string $apiToken): static
     {
         $this->apiToken = $apiToken;
+
+        return $this;
+    }
+
+    public function getRefreshToken(): ?string
+    {
+        return $this->refreshToken;
+    }
+
+    public function setRefreshToken(?string $refreshToken): static
+    {
+        $this->refreshToken = $refreshToken;
 
         return $this;
     }
