@@ -2,6 +2,7 @@
 
 namespace App\Security;
 
+use App\Dto\RegisterRequest;
 use App\Exception\BillingException;
 use App\Exception\BillingUnavailableException;
 use App\Exception\BillingValidationException;
@@ -20,6 +21,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\SecurityRequestAttributes;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class BillingAuthenticator extends AbstractLoginFormAuthenticator
 {
@@ -30,6 +32,7 @@ class BillingAuthenticator extends AbstractLoginFormAuthenticator
     public function __construct(
         private UrlGeneratorInterface $urlGenerator,
         private BillingClient $billingClient,
+        private ValidatorInterface $validator
     ) {
     }
 
@@ -38,8 +41,19 @@ class BillingAuthenticator extends AbstractLoginFormAuthenticator
         $email = $request->request->get('email');
         $password = $request->request->get('password');
 
+        $dto = new RegisterRequest();
+        $dto->email = $email;
+        $dto->password = $password;
+
+        $errors = $this->validator->validate($dto);
+        if (count($errors) > 0) {
+            throw new CustomUserMessageAuthenticationException(
+                $errors[0]->getMessage()
+            );
+        }
+
         try {
-            $token = $this->billingClient->auth($email, $password);
+            $token = $this->billingClient->auth($dto->email, $dto->password);
             $data = $this->billingClient->getCurrentUser($token);
         } catch (BillingUnavailableException) {
             throw new CustomUserMessageAuthenticationException('Сервис временно недоступен');
