@@ -42,4 +42,7 @@ encore_prod:
 phpunit:
 	@${PHP} bin/phpunit
 
+install:
+	@${COMPOSER} install
+	
 -include local.mk
