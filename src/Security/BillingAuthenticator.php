@@ -71,7 +71,7 @@ class BillingAuthenticator extends AbstractLoginFormAuthenticator
                 ->setRoles($data['roles'] ?? ['ROLE_USER'])
                 ->setBalance((string) $data['balance'])
                 ->setApiToken($tokens['token'])
-                ->setRefreshToken($tokens['refresh_token']);
+                ->setRefreshToken($tokens['refreshToken']);
         };
 
         return new SelfValidatingPassport(

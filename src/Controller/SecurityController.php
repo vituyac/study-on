@@ -55,7 +55,7 @@ class SecurityController extends AbstractController
             try {
                 $registerData = $billingClient->register($data['email'], $data['password']);
                 $token = $registerData['token'];
-                $refreshToken = $registerData['refresh_token'];
+                $refreshToken = $registerData['refreshToken'];
                 $currentUser = $billingClient->getCurrentUser($token);
             } catch (BillingUnavailableException) {
                 $form->addError(new FormError('Сервис временно недоступен. Попробуйте зарегистрироваться позднее'));
