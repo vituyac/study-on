@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Course;
 use App\Form\CourseType;
 use App\Repository\CourseRepository;
+use App\Service\BillingClient;
+use App\Service\CourseViewService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,12 +17,39 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/courses')]
 final class CourseController extends AbstractController
 {
+    #[Route('/courses/{id}/pay', name: 'app_course_pay', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function pay(Course $course, BillingClient $billingClient): Response
+    {
+        $user = $this->getUser();
+
+        try {
+            $billingClient->pay($user->getApiToken(), $course->getCode());
+            $this->addFlash('success', 'Курс успешно оплачен');
+        } catch (\Throwable $e) {
+            $this->addFlash('danger', $e->getMessage() ?: 'Произошла ошибка при оплате курса');
+        }
+
+        return $this->redirectToRoute('app_course_show', [
+            'id' => $course->getId(),
+        ]);
+    }
+
     #[Route(name: 'app_course_index', methods: ['GET'])]
     #[IsGranted('PUBLIC_ACCESS')]
-    public function index(CourseRepository $courseRepository): Response
-    {
+    public function index(
+        CourseRepository $courseRepository,
+        CourseViewService $courseViewService
+    ): Response {
+        $courses = $courseRepository->findAll();
+
+        $courseViews = $courseViewService->createList(
+            $courses,
+            $this->getUser()
+        );
+
         return $this->render('course/index.html.twig', [
-            'courses' => $courseRepository->findAll(),
+            'courses' => $courseViews,
         ]);
     }
 
@@ -46,11 +75,40 @@ final class CourseController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_course_show', methods: ['GET'])]
-    #[IsGranted('PUBLIC_ACCESS')]
-    public function show(Course $course): Response
+    public function show(Course $course, CourseViewService $courseViewService, BillingClient $billingClient): Response
     {
+        $user = $this->getUser();
+        if ($user) {
+            try {
+                $billingUser = $billingClient->getCurrentUser($user->getApiToken());
+            } catch (\Throwable) {
+                $billingUser = null;
+            }
+            if ($billingUser) {
+                $user->setBalance($billingUser['balance']);
+            }
+        }
+
+        $courseView = $courseViewService->createList(
+            [$course],
+            $user
+        )[0];
+
+        if (
+            $user
+            && $courseView->billingAvailable
+            && !$courseView->isFree()
+            && !$courseView->purchased
+            && $courseView->price !== null
+        ) {
+            $canPay = (float) $user->getBalance() >= (float) $courseView->price;
+        } else {
+            $canPay = true;
+        }
+
         return $this->render('course/show.html.twig', [
-            'course' => $course,
+            'course' => $courseView,
+            'canPay' => $canPay,
         ]);
     }
 
