@@ -6,13 +6,36 @@
 
 {% block body %}
     <div class="d-flex flex-column gap-3">
-        {% for course in courses %}
+        {% for item in courses %}
             <div class="d-flex flex-column border border-2 rounded p-4">
-                <div class="fs-4 fw-semibold">{{ course.title }}</div>
-                {% if course.description %}
-                    <p class="text-muted m-0">{{ course.description }}</p>
+                <div class="fs-4 fw-semibold">{{ item.course.title }}</div>
+                {% if item.course.description %}
+                    <p class="text-muted m-0">{{ item.course.description }}</p>
                 {% endif %}
-                <div class="mt-2"><a href="{{ path('app_course_show', {'id': course.id}) }}" class="btn btn-outline-primary">Перейти к курсу</a></div>
+
+                {% set buttonText = 'Перейти к курсу' %}
+                {% if item.billingAvailable %}
+                    <div class="mt-2 d-flex flex-column gap-1">
+                        {% if item.isFree %}
+                            <div><span class="badge bg-success">Бесплатно</span></div>
+                        {% elseif item.purchased %}
+                            {% if item.isRent %}
+                                <div><span class="badge bg-success">Арендовано до {{ item.expiresAt|date('d.m.Y H:i') }}</span></div>
+                            {% else %}
+                                <div><span class="badge bg-success">Куплено</span></div>
+                            {% endif %}
+                        {% elseif item.price is not null %}
+                            <div><span class="badge bg-warning">{{ item.price }} руб.</span></div>
+                            {% if item.isRent %}
+                                {% set buttonText = 'Арендовать' %}
+                            {% else %}
+                                {% set buttonText = 'Купить' %}
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <div class="mt-2"><a href="{{ path('app_course_show', {'id': item.course.id}) }}" class="btn btn-outline-primary">{{ buttonText }}</a></div>
             </div>
         {% else %}
             <div class="fs-4 fw-semibold p-4 text-center">

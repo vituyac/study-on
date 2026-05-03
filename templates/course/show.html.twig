@@ -1,16 +1,61 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ course.title }} / StudyOn{% endblock %}
+{% block title %}{{ course.course.title }} / StudyOn{% endblock %}
 
-{% block header %} / {{ course.title }}{% endblock %}
+{% block header %} / {{ course.course.title }}{% endblock %}
 
 {% block body %}
     <div class="d-flex flex-column gap-3">
         <div class="card shadow-sm border-1">
             <div class="card-body">
-                <h1 class="card-title mb-3">{{ course.title }}</h1>
-                {% if course.description %}
-                    <p class="card-text text-muted fs-5 mb-0">{{ course.description }}</p>
+                <h1 class="card-title mb-3">{{ course.course.title }}</h1>
+                {% if course.course.description %}
+                    <p class="card-text text-muted fs-5 mb-0">{{ course.course.description }}</p>
+                {% endif %}
+                {% if course.billingAvailable %}
+                    {% if course.isFree %}
+                        <span class="badge bg-success">Бесплатно</span>
+                    {% elseif course.purchased %}
+                        {% if course.isRent %}
+                            <span class="badge bg-success">
+                                Арендовано до {{ course.expiresAt|date('d.m.Y H:i') }}
+                            </span>
+                        {% else %}
+                            <span class="badge bg-success">Куплено</span>
+                        {% endif %}
+                    {% else %}
+                        <div class="d-flex flex-column gap-2 align-items-start mt-2">
+                            {% if course.price is not null %}
+                                <span class="badge bg-warning text-dark">
+                                    {{ course.price }} руб.
+                                </span>
+                            {% endif %}
+
+                            {% if app.user %}
+                                {% set buttonText = course.isRent ? 'Арендовать' : 'Купить' %}
+
+                                <button
+                                    type="button"
+                                    class="btn btn-primary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#paymentModal"
+                                    {% if not canPay %}disabled{% endif %}
+                                >
+                                    {{ buttonText }}
+                                </button>
+
+                                {% if not canPay %}
+                                    <div class="text-danger">
+                                        Недостаточно средств на балансе
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <a href="{{ path('app_login') }}" class="btn btn-primary">
+                                    Войдите, чтобы оплатить курс
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>
@@ -21,20 +66,29 @@
                     <p class="fs-4 fw-semibold mb-0">Уроки</p>
                 </div>
 
-                {% if course.lessons|length > 0 %}
+                {% if course.course.lessons|length > 0 %}
+                    {% set canOpen = course.isFree or course.purchased or is_granted('ROLE_SUPER_ADMIN') %}
                     <div class="d-flex flex-column gap-3">
-                        {% for lesson in course.lessons %}
-                            <a href="{{ path('app_lesson_show', {'id': lesson.id}) }}"
-                               class="lesson d-flex justify-content-between align-items-center text-decoration-none text-dark">
-                                <span>{{ loop.index }}. {{ lesson.title }}</span>
-                                <span class="text-muted small">Открыть</span>
-                            </a>
+                        {% for lesson in course.course.lessons %}
+                            {% if canOpen %}
+                                <a href="{{ path('app_lesson_show', {'id': lesson.id}) }}"
+                                class="lesson d-flex justify-content-between align-items-center text-decoration-none text-dark">
+                                    <span>{{ loop.index }}. {{ lesson.title }}</span>
+                                    <span class="text-muted small">Открыть</span>
+                                </a>
+                            {% else %}
+                                {% set divText = course.isRent ? 'Арендуйте' : 'Купите' %}
+                                <div class="lesson d-flex justify-content-between align-items-center text-muted">
+                                    <span>{{ loop.index }}. {{ lesson.title }}</span>
+                                    <span class="small">{{ divText }} курс</span>
+                                </div>
+                            {% endif %}
                         {% endfor %}
                     </div>
                 {% else %}
                     <div class="fs-4 fw-semibold p-4 text-center">
                         Здесь пока нет уроков.
-                        <a href="{{ path('app_lesson_new', {'course_id': course.id}) }}" class="text-decoration-none">Создайте первый урок</a>.
+                        <a href="{{ path('app_lesson_new', {'course_id': course.course.id}) }}" class="text-decoration-none">Создайте первый урок</a>.
                     </div>
                 {% endif %}
             </div>
@@ -46,11 +100,11 @@
             </a>
 
             {% if is_granted('ROLE_SUPER_ADMIN') %}
-                <a href="{{ path('app_course_edit', {'id': course.id}) }}" class="btn btn-outline-primary">
+                <a href="{{ path('app_course_edit', {'id': course.course.id}) }}" class="btn btn-outline-primary">
                     Редактировать
                 </a>
 
-                <a href="{{ path('app_lesson_new', {'course_id': course.id}) }}" class="btn btn-primary">
+                <a href="{{ path('app_lesson_new', {'course_id': course.course.id}) }}" class="btn btn-primary">
                     Добавить урок
                 </a>
 
@@ -58,4 +112,33 @@
             {% endif %}
         </div>
     </div>
+
+    {% if course.billingAvailable and not course.isFree and not course.purchased and app.user %}
+        {% set buttonText = course.isRent ? 'Арендовать' : 'Купить' %}
+
+        <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="paymentModalLabel">
+                            Подтверждение оплаты
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                        Вы действительно хотите {{ buttonText|lower }} курс
+                        «{{ course.course.title }}» за {{ course.price }} руб.?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Отмена
+                        </button>
+                        <a href="{{ path('app_course_pay', { id: course.course.id }) }}" class="btn btn-primary">
+                            Подтвердить
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}

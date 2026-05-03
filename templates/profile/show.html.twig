@@ -22,7 +22,76 @@
                         Пользователь
                     {% endif %}
                 </p>
-                <p class="fs-4 fw-semibold mb-0">Баланс: {{ user.balance }}</p>
+                <p class="fs-4 fw-semibold mb-0">Баланс: {{ user.balance }} руб.</p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-1">
+            <div class="card-body">
+                <h2 class="fs-4 fw-semibold mb-3">История транзакций</h2>
+
+                {% if not billingAvailable %}
+                    <div class="alert alert-warning mb-0">
+                        Сервис временно недоступен
+                    </div>
+                {% elseif transactions is empty %}
+                    <p class="text-muted mb-0">Транзакций пока нет.</p>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Тип</th>
+                                    <th>Сумма</th>
+                                    <th>Курс</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in transactions %}
+                                    {% set course = null %}
+
+                                    {% if transaction.courseCode is defined and coursesByCode[transaction.courseCode] is defined %}
+                                        {% set course = coursesByCode[transaction.courseCode] %}
+                                    {% endif %}
+
+                                    <tr>
+                                        <td>
+                                            {% if transaction.createdAt is defined %}
+                                                {{ transaction.createdAt|date('d.m.Y H:i:s') }}
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if 'DEPOSIT' in transaction.type %}
+                                                Пополнение
+                                            {% elseif 'PAYMENT' in transaction.type %}
+                                                Оплата
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ transaction.amount ?? '—' }} руб.
+                                        </td>
+                                        <td>
+                                            {% if course %}
+                                                <a href="{{ path('app_course_show', { id: course.id }) }}">
+                                                    {{ course.title }}
+                                                </a>
+                                            {% elseif transaction.courseCode is defined and transaction.courseCode %}
+                                                {{ transaction.courseCode }}
+                                            {% else %}
+                                                Пополнение баланса
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
             </div>
         </div>
 
