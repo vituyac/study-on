@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Lesson;
 use App\Form\LessonType;
 use App\Repository\CourseRepository;
+use App\Security\Voter\CourseVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -48,6 +49,8 @@ final class LessonController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function show(Lesson $lesson): Response
     {
+        $this->denyAccessUnlessGranted(CourseVoter::ACCESS, $lesson->getCourse());
+
         return $this->render('lesson/show.html.twig', [
             'lesson' => $lesson,
         ]);
