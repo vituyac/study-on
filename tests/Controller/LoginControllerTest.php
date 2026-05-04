@@ -103,12 +103,12 @@ class LoginControllerTest extends WebTestCase
         yield 'base user' => [[
             'email' => '',
             'password' => 'password',
-        ], 'Email не может быть пустым.'];
+        ], 'Введите email'];
 
         yield 'admin user' => [[
             'email' => 'user01@mail.ru',
             'password' => '',
-        ], 'Пароль не может быть пустым.'];
+        ], 'Введите пароль'];
 
         yield 'invalid email' => [[
             'email' => 'invalid-email',

@@ -108,7 +108,7 @@
                     Добавить урок
                 </a>
 
-                {{ include('course/_delete_form.html.twig') }}
+                {{ include('course/_delete_form.html.twig', {'course': course.course}) }}
             {% endif %}
         </div>
     </div>

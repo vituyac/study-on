@@ -16,7 +16,9 @@ class CourseControllerTest extends WebTestCase
         $crawler = $client->request('GET', '/courses');
         $this->assertResponseIsSuccessful();
 
-        $this->assertCount(4, $crawler->selectLink('Перейти к курсу'));
+        $this->assertCount(1, $crawler->selectLink('Перейти к курсу'));
+        $this->assertCount(2, $crawler->selectLink('Купить'));
+        $this->assertCount(1, $crawler->selectLink('Арендовать'));
     }
 
     public function testShow(): void
@@ -29,7 +31,7 @@ class CourseControllerTest extends WebTestCase
         $crawler = $client->click($link);
         $this->assertResponseIsSuccessful();
 
-        $this->assertCount(4, $crawler->selectLink('Открыть'));
+        $this->assertCount(5, $crawler->selectLink('Открыть'));
     }
 
     public function testShowNotFound(): void
