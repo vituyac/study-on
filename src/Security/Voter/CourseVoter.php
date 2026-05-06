@@ -36,11 +36,7 @@ final class CourseVoter extends Voter
     private function canAccessCourse(Course $course, TokenInterface $token): bool
     {
         try {
-            $billingCourses = array_column(
-                $this->billingClient->courses(),
-                null,
-                'code'
-            );
+            $billingCourses = array_column($this->billingClient->courses(), null, 'code');
 
             $code = $course->getCode();
 
