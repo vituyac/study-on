@@ -17,8 +17,11 @@ class CourseControllerTest extends WebTestCase
         $this->assertResponseIsSuccessful();
 
         $this->assertCount(1, $crawler->selectLink('Перейти к курсу'));
+        $this->assertSelectorTextContains('body', 'Бесплатно');
         $this->assertCount(2, $crawler->selectLink('Купить'));
+        $this->assertSelectorTextContains('body', '200.00 руб');
         $this->assertCount(1, $crawler->selectLink('Арендовать'));
+        $this->assertSelectorTextContains('body', '100.00 руб');
     }
 
     public function testShow(): void
@@ -50,6 +53,32 @@ class CourseControllerTest extends WebTestCase
 
         $client->request('GET', '/courses/1000/edit');
         $this->assertResponseStatusCodeSame(404);
+    }
+
+    public function testPay(): void
+    {
+        $client = static::createClient();
+        $client->disableReboot();
+
+        $this->loginAsUser($client);
+
+        $crawler = $client->getCrawler();
+
+        $link = $crawler->selectLink('Купить')->first()->link();
+        $crawler = $client->click($link);
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('body', '200.00 руб');
+        $this->assertSelectorTextContains('body', 'Купите курс');
+        $this->assertSelectorTextContains('body', 'Подтверждение оплаты');
+
+        $link = $crawler->selectLink('Подтвердить')->link();
+        $coursePageUrl = $crawler->getUri();
+        $client->click($link);
+        $this->assertResponseRedirects($coursePageUrl);
+
+        $crawler = $client->followRedirect();
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('body', 'Куплено');
     }
 
     public function testCreate(): void

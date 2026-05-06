@@ -22,17 +22,49 @@ class LessonControllerTest extends WebTestCase
         $link = $crawler->selectLink('Перейти к курсу')->first()->link();
         $crawler = $client->click($link);
         $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('body', 'Арендовано до');
 
         $link = $crawler->selectLink('Открыть')->first()->link();
         $crawler = $client->click($link);
         $this->assertResponseIsSuccessful();
+    }
 
-        $this->assertSelectorTextContains(
-            'body',
-            'На этом уроке студент познакомится со способами установки PHP, '
-            . 'проверкой версии в консоли и запуском первого PHP-скрипта. '
-            . 'Также рассматриваются теги PHP и базовая структура файла.'
-        );
+    public function testOpenRentLessonWithUnauthorizedUser(): void
+    {
+        $client = static::createClient();
+
+        $crawler = $client->request('GET', '/courses');
+        $this->assertResponseIsSuccessful();
+
+        $this->assertSelectorTextContains('body', '100.00 руб');
+        $link = $crawler->selectLink('Арендовать')->first()->link();
+        $crawler = $client->click($link);
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('body', '100.00 руб');
+        $this->assertSelectorTextContains('body', 'Арендуйте курс');
+
+        $link = $crawler->selectLink('Войдите, чтобы оплатить курс')->first()->link();
+        $crawler = $client->click($link);
+        $this->assertResponseIsSuccessful();
+    }
+
+    public function testOpenFullLessonWithUnauthorizedUser(): void
+    {
+        $client = static::createClient();
+
+        $crawler = $client->request('GET', '/courses');
+        $this->assertResponseIsSuccessful();
+
+        $this->assertSelectorTextContains('body', '200.00 руб');
+        $link = $crawler->selectLink('Купить')->first()->link();
+        $crawler = $client->click($link);
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('body', '200.00 руб');
+        $this->assertSelectorTextContains('body', 'Купите курс');
+
+        $link = $crawler->selectLink('Войдите, чтобы оплатить курс')->first()->link();
+        $crawler = $client->click($link);
+        $this->assertResponseIsSuccessful();
     }
 
     public function testShowNotFound(): void

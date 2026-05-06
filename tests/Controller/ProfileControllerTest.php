@@ -11,7 +11,7 @@ class ProfileControllerTest extends WebTestCase
     use LoginUserTrait;
 
     #[DataProvider('userDataProvider')]
-    public function testShow(string $email, string $role, string $balance): void
+    public function testShow(string $email, string $role, string $balance, array $transactions): void
     {
         $client = static::createClient();
         $client->disableReboot();
@@ -31,6 +31,14 @@ class ProfileControllerTest extends WebTestCase
         $this->assertSelectorTextContains('body', $email);
         $this->assertSelectorTextContains('body', $role);
         $this->assertSelectorTextContains('body', $balance);
+
+        if (empty($transactions)) {
+            $this->assertSelectorTextContains('body', 'Транзакций пока нет');
+        } else {
+            foreach ($transactions as $transaction) {
+                $this->assertSelectorTextContains('body', $transaction);
+            }
+        }
     }
 
     public static function userDataProvider(): iterable
@@ -38,13 +46,21 @@ class ProfileControllerTest extends WebTestCase
         yield 'base user' => [
             'email' => 'user01@mail.ru',
             'role' => 'Пользователь',
-            'balance' => '1000.00',
+            'balance' => '1500.00',
+            'transactions' => [
+                'Оплата',
+                '100.00',
+                'PHP для начинающих',
+                'Пополнение',
+                '1600.00',
+            ],
         ];
 
         yield 'admin user' => [
             'email' => 'user02@mail.ru',
             'role' => 'Администратор',
-            'balance' => '100.00',
+            'balance' => '0.00',
+            'transactions' => [],
         ];
     }
 }

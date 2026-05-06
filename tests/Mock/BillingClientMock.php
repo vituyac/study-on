@@ -9,36 +9,21 @@ use App\Service\BillingClient;
 
 final class BillingClientMock extends BillingClient
 {
-    private const TOKEN_USER01 = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1c2VybmFtZSI6InVzZXIwMUBtYWlsLnJ1IiwiZXhwIjo5OTk5OTk5OTk5fQ.fake_sig';
-    private const TOKEN_USER02 = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1c2VybmFtZSI6InVzZXIwMkBtYWlsLnJ1IiwiZXhwIjo5OTk5OTk5OTk5fQ.fake_sig';
-    private const REFRESH_USER01 = 'refresh_token_user01';
-    private const REFRESH_USER02 = 'refresh_token_user02';
-
     private array $users = [
         'user01@mail.ru' => [
             'password' => 'password',
             'roles' => ['ROLE_USER'],
-            'balance' => '1000.00',
-            'token' => self::TOKEN_USER01,
-            'refreshToken' => self::REFRESH_USER01,
+            'balance' => '1500.00',
+            'token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1c2VybmFtZSI6InVzZXIwMUBtYWlsLnJ1IiwiZXhwIjo5OTk5OTk5OTk5fQ.fake_sig',
+            'refreshToken' => 'refresh_token_user01',
         ],
         'user02@mail.ru' => [
             'password' => 'password',
             'roles' => ['ROLE_SUPER_ADMIN'],
-            'balance' => '100.00',
-            'token' => self::TOKEN_USER02,
-            'refreshToken' => self::REFRESH_USER02,
+            'balance' => '0.00',
+            'token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1c2VybmFtZSI6InVzZXIwMkBtYWlsLnJ1IiwiZXhwIjo5OTk5OTk5OTk5fQ.fake_sig',
+            'refreshToken' => 'refresh_token_user02',
         ],
-    ];
-
-    private array $tokenMap = [
-        self::TOKEN_USER01 => 'user01@mail.ru',
-        self::TOKEN_USER02 => 'user02@mail.ru',
-    ];
-
-    private array $refreshMap = [
-        self::REFRESH_USER01 => 'user01@mail.ru',
-        self::REFRESH_USER02 => 'user02@mail.ru',
     ];
 
     private array $courses = [
@@ -60,27 +45,31 @@ final class BillingClientMock extends BillingClient
         [
             'code' => 'web-security',
             'type' => 'FULL',
-            'price' => '150.00',
+            'price' => '1600.00',
         ],
     ];
 
     private array $transactions = [
-        [
-            'id' => 1,
-            'type' => 'PAYMENT',
-            'amount' => '100.00',
-            'createdAt' => '2026-05-03T23:22:08+00:00',
-            'expiresAt' => '2026-05-10T23:22:08+00:00',
-            'courseCode' => 'php-basics',
+        'user01@mail.ru' => [
+            [
+                'id' => 1,
+                'type' => 'PAYMENT',
+                'amount' => '100.00',
+                'createdAt' => '2026-05-03T23:22:08+00:00',
+                'expiresAt' => '2027-05-03T23:22:08+00:00',
+                'courseCode' => 'php-basics',
+            ],
+            [
+                'id' => 2,
+                'type' => 'DEPOSIT',
+                'amount' => '1600.00',
+                'createdAt' => '2026-05-03T23:22:07+00:00',
+                'expiresAt' => null,
+                'courseCode' => null,
+            ],
         ],
-        [
-            'id' => 2,
-            'type' => 'DEPOSIT',
-            'amount' => '1600.00',
-            'createdAt' => '2026-05-03T23:22:07+00:00',
-            'expiresAt' => null,
-            'courseCode' => null,
-        ],
+
+        'user02@mail.ru' => [],
     ];
 
     public function __construct()
@@ -146,7 +135,7 @@ final class BillingClientMock extends BillingClient
         }
 
         $newToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1c2VybmFtZSI6Im5ld191c2VyIiwiZXhwIjo5OTk5OTk5OTk5fQ.fake_sig_new';
-        $newRefresh = 'refresh_token_new_' . $email;
+        $newRefresh = 'refresh_token_' . $email;
 
         $this->users[$email] = [
             'password' => $password,
@@ -155,8 +144,6 @@ final class BillingClientMock extends BillingClient
             'token' => $newToken,
             'refreshToken' => $newRefresh,
         ];
-        $this->tokenMap[$newToken] = $email;
-        $this->refreshMap[$newRefresh] = $email;
 
         return [
             'token' => $newToken,
@@ -166,7 +153,14 @@ final class BillingClientMock extends BillingClient
 
     public function refreshToken(string $token): array
     {
-        $email = $this->refreshMap[$token] ?? null;
+        $email = null;
+
+        foreach ($this->users as $userEmail => $user) {
+            if ($user['refreshToken'] === $token) {
+                $email = $userEmail;
+                break;
+            }
+        }
 
         if ($email === null) {
             throw new BillingException('Invalid refresh token.', 401);
@@ -198,16 +192,47 @@ final class BillingClientMock extends BillingClient
 
     public function transactions(string $token, array $filters): array
     {
-        return $this->transactions;
-    }
-
-    public function pay(string $token, string $code): array
-    {
-        $email = $this->tokenMap[$token] ?? null;
+        $email = null;
+        foreach ($this->users as $userEmail => $user) {
+            if ($user['token'] === $token) {
+                $email = $userEmail;
+                break;
+            }
+        }
 
         if ($email === null) {
             throw new BillingException('Unauthorized.', 401);
         }
+
+        return $this->transactions[$email] ?? [];
+    }
+
+    public function pay(string $token, string $code): array
+    {
+        $email = null;
+        foreach ($this->users as $userEmail => $user) {
+            if ($user['token'] === $token) {
+                $email = $userEmail;
+                break;
+            }
+        }
+
+        if ($email === null) {
+            throw new BillingException('Unauthorized.', 401);
+        }
+
+        $course = $this->course($code);
+
+        $this->transactions[$email][] = [
+            'id' => count($this->transactions[$email] ?? []) + 1,
+            'type' => 'PAYMENT',
+            'amount' => $course['price'],
+            'createdAt' => (new \DateTimeImmutable())->format(DATE_ATOM),
+            'expiresAt' => $course['type'] === 'RENT'
+                ? (new \DateTimeImmutable('+7 days'))->format(DATE_ATOM)
+                : null,
+            'courseCode' => $code,
+        ];
 
         return [
             'success' => true,
@@ -217,7 +242,13 @@ final class BillingClientMock extends BillingClient
 
     public function getCurrentUser(string $token): array
     {
-        $email = $this->tokenMap[$token] ?? null;
+        $email = null;
+        foreach ($this->users as $userEmail => $user) {
+            if ($user['token'] === $token) {
+                $email = $userEmail;
+                break;
+            }
+        }
 
         if ($email === null || $email === 'unavailable@example.com') {
             throw new BillingUnavailableException();
