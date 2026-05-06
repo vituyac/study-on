@@ -19,9 +19,34 @@ final class CourseController extends AbstractController
 {
     #[Route('/courses/{id}/pay', name: 'app_course_pay', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
-    public function pay(Course $course, BillingClient $billingClient): Response
+    public function pay(Course $course, BillingClient $billingClient, CourseViewService $courseViewService): Response
     {
         $user = $this->getUser();
+        if ($user) {
+            try {
+                $billingUser = $billingClient->getCurrentUser($user->getApiToken());
+            } catch (\Throwable) {
+                $billingUser = null;
+            }
+            if ($billingUser) {
+                $user->setBalance($billingUser['balance']);
+            }
+        }
+
+        $courseView = $courseViewService->createList(
+            [$course],
+            $user
+        )[0];
+
+        if (!$billingUser) {
+            $this->addFlash('danger', 'Сервис временно не доступен');
+        } elseif (
+            !$courseView->isFree()
+            && $courseView->price !== null
+            && ((float) $user->getBalance() < (float) $courseView->price)
+        ) {
+            $this->addFlash('danger', 'У вас недостаточно средств для оплаты курса');
+        }
 
         try {
             $billingClient->pay($user->getApiToken(), $course->getCode());
@@ -96,6 +121,7 @@ final class CourseController extends AbstractController
 
         if (
             $user
+            && $billingUser
             && $courseView->billingAvailable
             && !$courseView->isFree()
             && !$courseView->purchased
