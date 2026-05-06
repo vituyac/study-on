@@ -17,9 +17,10 @@ final class ProfileController extends AbstractController
     public function show(BillingClient $billingClient, CourseRepository $courseRepository): Response
     {
         $user = $this->getUser();
-        $billingUser = $billingClient->getCurrentUser($this->getUser()->getApiToken());
 
         try {
+            $billingUser = $billingClient->getCurrentUser($user->getApiToken());
+
             $transactions = $billingClient->transactions($user->getApiToken(), []);
             $coursesByCode = [];
             foreach ($courseRepository->findAll() as $course) {
